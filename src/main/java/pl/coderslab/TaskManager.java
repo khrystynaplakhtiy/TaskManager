@@ -1,9 +1,13 @@
 package pl.coderslab;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.Scanner;
+
 
 public class TaskManager {
     public static void main(String[] args) {
@@ -15,6 +19,7 @@ public class TaskManager {
         String[][] updatedTask = addTask(tasks);
         System.out.println(Arrays.deepToString(updatedTask));
         listTasks(updatedTask);
+        removeTask(updatedTask);
 
     }
 
@@ -87,14 +92,14 @@ public class TaskManager {
         return rowCount;
     }
 
-    public static String getTaskInput(){
+    public static String getTaskInput() {
         System.out.println("Please select task");
         Scanner scanner = new Scanner(System.in);
         return scanner.nextLine();
 
     }
 
-//    public static void runOptionFromInput(String input){
+    //    public static void runOptionFromInput(String input){
 //        switch (input) {
 //            case "add":
 //                addTask();
@@ -111,7 +116,7 @@ public class TaskManager {
 //        }
 //
 //    }
-    public static String[][] addTask(String[][] tasks){
+    public static String[][] addTask(String[][] tasks) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please add task description");
         String taskDesc = scanner.nextLine();
@@ -121,19 +126,19 @@ public class TaskManager {
         String isImportant = scanner.nextLine();
 
 
-        int newTaskLength = tasks.length+1;
+        int newTaskLength = tasks.length + 1;
         String[][] updatedTasks = copyArray(tasks);
         updatedTasks[3][0] = taskDesc;
-        updatedTasks[newTaskLength-1][1] = taskDueDate;
-        updatedTasks[newTaskLength-1][2] = isImportant;
+        updatedTasks[newTaskLength - 1][1] = taskDueDate;
+        updatedTasks[newTaskLength - 1][2] = isImportant;
 
         return updatedTasks;
 
     }
 
-    public static String[][] copyArray(String[][] originalArray){
+    public static String[][] copyArray(String[][] originalArray) {
         int length = originalArray.length;
-        String[][] target = new String[length+1][originalArray[0].length];
+        String[][] target = new String[length + 1][originalArray[0].length];
         for (int i = 0; i < length; i++) {
             System.arraycopy(originalArray[i], 0, target[i], 0, originalArray[i].length);
         }
@@ -142,16 +147,42 @@ public class TaskManager {
     }
 
 
-    public static void listTasks(String[][] tasks){
+    public static void listTasks(String[][] tasks) {
         for (int i = 0; i < tasks.length; i++) {
-            for (int j = 0; j< tasks[i].length; j++) {
-                System.out.print(tasks[i][j]+ " ");
+            System.out.print(i + ": ");
+            for (int j = 0; j < tasks[i].length; j++) {
+                System.out.print(tasks[i][j] + " ");
             }
             System.out.println();
         }
 
     }
 
+    public static void removeTask(String[][] tasks) {
+        System.out.println("Please select number to remove");
+        Scanner scanner = new Scanner(System.in);
+        String taskNumber = scanner.next();
+
+        while (true) {
+            if (StringUtils.isNumeric(taskNumber)) {
+                int convertedNumber = Integer.parseInt(taskNumber);
+                if (convertedNumber >= 0) {
+                    String[][] updatedTasks = ArrayUtils.remove(tasks, convertedNumber);
+                    System.out.println("Value was successfully deleted");
+                    break;
+
+                }
+
+            } else {
+                System.out.println("Incorrect argument passed.Please give number greater or equal to 0");
+                taskNumber = scanner.next();
+            }
+
+        }
+
+    }
 
 }
+
+
 
