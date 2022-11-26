@@ -3,28 +3,35 @@ package pl.coderslab;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import java.util.Arrays;
+
 import java.util.Scanner;
 
 
 public class TaskManager {
-    public static void main(String[] args) {
-        readDisplayDataFromFile();
-        System.out.println(displayTaskOptions());
 
-        System.out.println(Arrays.deepToString(convertTaskToTable()));
-        String[][] tasks = convertTaskToTable();
-        String[][] updatedTask = addTask(tasks);
-        System.out.println(Arrays.deepToString(updatedTask));
-        listTasks(updatedTask);
-        removeTask(updatedTask);
+    static String fileName = "tasks.csv";
+    static String[][] currentTasks = convertTaskToTable();
+
+
+    public static void main(String[] args) {
+
+        readDisplayDataFromFile();
+        interact();
 
     }
 
     public static void readDisplayDataFromFile() {
-        File file = new File("tasks.csv");
+        File file = new File(fileName);
         StringBuilder reading = new StringBuilder();
         try {
             Scanner scan = new Scanner(file);
@@ -53,7 +60,7 @@ public class TaskManager {
     }
 
     public static String[][] convertTaskToTable() {
-        File file = new File("tasks.csv");
+        File file = new File(fileName);
         Scanner scan = null;
         try {
             scan = new Scanner(file);
@@ -78,7 +85,7 @@ public class TaskManager {
     }
 
     public static int countRows() {
-        File file = new File("tasks.csv");
+        File file = new File(fileName);
         int rowCount = 0;
         try {
             Scanner scan = new Scanner(file);
@@ -92,31 +99,44 @@ public class TaskManager {
         return rowCount;
     }
 
-    public static String getTaskInput() {
-        System.out.println("Please select task");
+
+    public static void interact() {
         Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine();
+
+        while (true) {
+            System.out.println(displayTaskOptions());
+            String option = scanner.next();
+            executeSelectedOption(option, currentTasks);
+            if (option.equals("exit")){
+                System.out.println(ConsoleColors.RED+"Bye, bye");
+                break;
+            }
+        }
+    }
+
+    public static void executeSelectedOption(String option, String[][] tasks) {
+        switch (option) {
+            case "add":
+                addTask(tasks);
+                break;
+            case "remove":
+                removeTask(tasks);
+                break;
+            case "list":
+                listTasks(tasks);
+                break;
+            case "exit":
+                exit(tasks);
+                break;
+
+            default:
+                System.out.println(ConsoleColors.RED+"Please select a correct option");
+                System.out.println(ConsoleColors.RESET);
+        }
 
     }
 
-    //    public static void runOptionFromInput(String input){
-//        switch (input) {
-//            case "add":
-//                addTask();
-//                break;
-//            case "remove":
-//                removeTask();
-//            case "list":
-//                readDisplayDataFromFile();
-//            case "exit":
-//                exit();
-//
-//            default:
-//                System.out.println("Please select a correct option.");
-//        }
-//
-//    }
-    public static String[][] addTask(String[][] tasks) {
+    public static void addTask(String[][] tasks) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please add task description");
         String taskDesc = scanner.nextLine();
@@ -128,11 +148,11 @@ public class TaskManager {
 
         int newTaskLength = tasks.length + 1;
         String[][] updatedTasks = copyArray(tasks);
-        updatedTasks[3][0] = taskDesc;
+        updatedTasks[newTaskLength - 1][0] = taskDesc;
         updatedTasks[newTaskLength - 1][1] = taskDueDate;
         updatedTasks[newTaskLength - 1][2] = isImportant;
 
-        return updatedTasks;
+        currentTasks = updatedTasks;
 
     }
 
@@ -167,10 +187,9 @@ public class TaskManager {
             if (StringUtils.isNumeric(taskNumber)) {
                 int convertedNumber = Integer.parseInt(taskNumber);
                 if (convertedNumber >= 0) {
-                    String[][] updatedTasks = ArrayUtils.remove(tasks, convertedNumber);
+                    currentTasks = ArrayUtils.remove(tasks, convertedNumber);
                     System.out.println("Value was successfully deleted");
                     break;
-
                 }
 
             } else {
@@ -182,7 +201,25 @@ public class TaskManager {
 
     }
 
+    public static void exit(String[][] tasks) {
+        Path path1 = Paths.get(fileName);
+        String[] linesToWrite = new String[tasks.length];
+        for (int i = 0; i < tasks.length; i++) {
+            linesToWrite[i] = String.join(",", tasks[i]);
+        }
+
+        try {
+            Files.write(path1, Arrays.asList(linesToWrite));
+        } catch (IOException ex) {
+            System.out.println("Could not save file - error: " + ex.getMessage());
+        }
+        System.out.println("File successfully saved");
+
+    }
+
 }
+
+
 
 
 
